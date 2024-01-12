@@ -26,12 +26,12 @@ public class TicTacToeController implements Initializable {
     private void addButtonsOnGrid() {
         buttons = new Button[3][3];
 
-        for (int col = 0; col < buttons.length; col++) {
-            for (int row = 0; row < buttons[0].length; row++) {
-                buttons[col][row] = new Button();
-                setButtonAttribultes(buttons[col][row]);
+        for (int row = 0; row < buttons.length; row++) {
+            for (int col = 0; col < buttons[0].length; col++) {
+                buttons[row][col] = new Button();
+                setButtonAttribultes(buttons[row][col]);
 
-                gridButtons.add(buttons[col][row], col, row);
+                gridButtons.add(buttons[row][col], col, row);
             }
         }
     }
@@ -43,16 +43,18 @@ public class TicTacToeController implements Initializable {
         button.setOnAction(actionEvent -> {
             setTextByTurnPlayer(button);
 
-            if(isPlayerWon("X") || isPlayerWon("O")) {
+            String currentTurnPlayer = isTurnPlayerX ? "X" : "O";
+            if(isPlayerWon(currentTurnPlayer)) {
+                openDialogBox("Jogador '" + currentTurnPlayer + "' venceu!");
                 resetGame();
-                String playerWin = isTurnPlayerX ? "O" : "X";
-                openDialogBox("Jogador '" + playerWin + "' venceu!");
             }
 
             if(checkIsTie()) {
-                resetGame();
                 openDialogBox("O jogo empatou!");
+                resetGame();
             }
+
+            changeTurnPlayer();
         });
     }
 
@@ -60,7 +62,6 @@ public class TicTacToeController implements Initializable {
         if(!Objects.equals(button.getText(), "")) return;
 
         button.setText(isTurnPlayerX ? "X" : "O");
-        isTurnPlayerX = !isTurnPlayerX;
     }
 
     private boolean isPlayerWon(String player) {
@@ -70,32 +71,58 @@ public class TicTacToeController implements Initializable {
              || isVerticalWin(0, player)
              || isVerticalWin(1, player)
              || isVerticalWin(2, player)
-             || isDiagonalWin(player);
+             || isDiagonalAscendingWin(player)
+             || isDiagonalDescendingWin(player);
     }
 
     private boolean isHorizontalWin(int row, String player) {
-        return Objects.equals(buttons[0][row].getText(), player)
-            && Objects.equals(buttons[1][row].getText(), player)
-            && Objects.equals(buttons[2][row].getText(), player);
+        boolean isWin = true;
+
+        for (int col = 0; col < buttons.length; col++) {
+            if (!Objects.equals(buttons[row][col].getText(), player))
+                return false;
+        }
+
+        return  isWin;
     }
 
     private boolean isVerticalWin(int col, String player) {
-        return Objects.equals(buttons[col][0].getText(), player)
-            && Objects.equals(buttons[col][1].getText(), player)
-            && Objects.equals(buttons[col][2].getText(), player);
+        boolean isWin = true;
 
+        for (int row = 0; row < buttons.length; row++) {
+            if(!Objects.equals(buttons[row][col].getText(), player))
+                return false;
+        }
+
+        return isWin;
     }
 
-    private boolean isDiagonalWin(String player) {
-        return Objects.equals(buttons[0][0].getText(), player)
-            && Objects.equals(buttons[1][1].getText(), player)
-            && Objects.equals(buttons[2][2].getText(), player)
+    private boolean isDiagonalAscendingWin(String player) {
+        boolean isWin = true;
 
-            || Objects.equals(buttons[0][2].getText(), player)
-            && Objects.equals(buttons[1][1].getText(), player)
-            && Objects.equals(buttons[2][0].getText(), player);
+        for (int i = 0; i < buttons.length; i++) {
+            if(!Objects.equals(buttons[i][i].getText(), player)) {
+                return false;
+            }
+        }
+
+        return isWin;
     }
 
+    private boolean isDiagonalDescendingWin(String player) {
+        boolean isWin = true;
+
+        int col = 2;
+        for (int row = 0; row < buttons.length; row++) {
+            if (!Objects.equals(buttons[row][col].getText(), player)) {
+                return false;
+            }
+
+            col--;
+        }
+
+        return isWin;
+    }
 
     private void resetGame() {
         clearButtonsText();
@@ -117,6 +144,10 @@ public class TicTacToeController implements Initializable {
         dialog.showAndWait();
     }
 
+    private void changeTurnPlayer() {
+        isTurnPlayerX = !isTurnPlayerX;
+    }
+
     private boolean checkIsTie() {
         boolean isTie = true;
 
@@ -130,5 +161,4 @@ public class TicTacToeController implements Initializable {
 
         return isTie;
     }
-
 }
