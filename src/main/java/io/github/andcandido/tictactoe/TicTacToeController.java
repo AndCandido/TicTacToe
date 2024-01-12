@@ -29,14 +29,14 @@ public class TicTacToeController implements Initializable {
         for (int row = 0; row < buttons.length; row++) {
             for (int col = 0; col < buttons[0].length; col++) {
                 buttons[row][col] = new Button();
-                setButtonAttribultes(buttons[row][col]);
+                setButtonAttributes(buttons[row][col]);
 
                 gridButtons.add(buttons[row][col], col, row);
             }
         }
     }
 
-    private void setButtonAttribultes(Button button) {
+    private void setButtonAttributes(Button button) {
         button.setFont(new Font("Arial", 40));
         button.setPrefSize(100, 100);
 
