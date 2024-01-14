@@ -14,17 +14,43 @@ public class TicTacToeController implements Initializable {
 
     @FXML
     private GridPane gridButtons;
-    private Button[][] buttons;
+    @FXML
+    private Spinner<Integer> spinnerButtonsLayout;
+    @FXML
+    private Label labelMatches;
+    @FXML
+    private Label labelPlayerXWins;
+    @FXML
+    private Label labelPlayerOWins;
+    @FXML
+    private Label labelTies;
 
+    private Button[][] buttons;
     private boolean isTurnPlayerX = true;
+    private int matches;
+    private int playerXWins;
+    private int playerOWins;
+    private int ties;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        addButtonsOnGrid();
+        initSpinner();
+        initGridButtons(spinnerButtonsLayout.getValue());
     }
 
-    private void addButtonsOnGrid() {
-        buttons = new Button[3][3];
+    private void initSpinner() {
+        spinnerButtonsLayout.setValueFactory(
+            new SpinnerValueFactory.IntegerSpinnerValueFactory(3, 9, 3)
+        );
+        spinnerButtonsLayout.valueProperty().addListener((obs, oldValue, newValue) -> {
+            initGridButtons(newValue);
+        });
+    }
+
+    private void initGridButtons(int buttonsLayout) {
+        gridButtons.getChildren().clear();
+
+        buttons = new Button[buttonsLayout][buttonsLayout];
 
         for (int row = 0; row < buttons.length; row++) {
             for (int col = 0; col < buttons[0].length; col++) {
@@ -39,20 +65,13 @@ public class TicTacToeController implements Initializable {
     private void setButtonAttributes(Button button) {
         button.setFont(new Font("Arial", 40));
         button.setPrefSize(100, 100);
+        button.setMinSize(100, 100);
 
         button.setOnAction(actionEvent -> {
             setTextByTurnPlayer(button);
 
-            String currentTurnPlayer = isTurnPlayerX ? "X" : "O";
-            if(isPlayerWon(currentTurnPlayer)) {
-                openDialogBox("Jogador '" + currentTurnPlayer + "' venceu!");
-                resetGame();
-            }
-
-            if(checkIsTie()) {
-                openDialogBox("O jogo empatou!");
-                resetGame();
-            }
+            checkWin();
+            checkTie();
 
             changeTurnPlayer();
         });
@@ -64,21 +83,30 @@ public class TicTacToeController implements Initializable {
         button.setText(isTurnPlayerX ? "X" : "O");
     }
 
+    private void checkWin() {
+        String currentTurnPlayer = isTurnPlayerX ? "X" : "O";
+        if(!isPlayerWon(currentTurnPlayer)) return;
+
+        openDialogBox("Jogador '" + currentTurnPlayer + "' venceu!");
+        resetGame();
+        plusPlayerWins(currentTurnPlayer);
+    }
+
     private boolean isPlayerWon(String player) {
-         return isHorizontalWin(0, player)
-             || isHorizontalWin(1, player)
-             || isHorizontalWin(2, player)
-             || isVerticalWin(0, player)
-             || isVerticalWin(1, player)
-             || isVerticalWin(2, player)
-             || isDiagonalAscendingWin(player)
-             || isDiagonalDescendingWin(player);
+        for (int i = 0; i < buttons.length; i++) {
+            if(isHorizontalWin(i, player))
+                return true;
+            if(isVerticalWin(i, player))
+                return true;
+        }
+
+        return isDiagonalAscendingWin(player) || isDiagonalDescendingWin(player);
     }
 
     private boolean isHorizontalWin(int row, String player) {
         boolean isWin = true;
 
-        for (int col = 0; col < buttons.length; col++) {
+        for (int col = 0; col < buttons[0].length; col++) {
             if (!Objects.equals(buttons[row][col].getText(), player))
                 return false;
         }
@@ -112,40 +140,23 @@ public class TicTacToeController implements Initializable {
     private boolean isDiagonalDescendingWin(String player) {
         boolean isWin = true;
 
-        int col = 2;
+        int col = buttons[0].length - 1;
         for (int row = 0; row < buttons.length; row++) {
             if (!Objects.equals(buttons[row][col].getText(), player)) {
                 return false;
             }
-
             col--;
         }
 
         return isWin;
     }
 
-    private void resetGame() {
-        clearButtonsText();
-    }
-
-    private void clearButtonsText() {
-        for (Button[] buttonsCol : buttons) {
-            for (Button button : buttonsCol) {
-                button.setText("");
-            }
+    private void checkTie() {
+        if(checkIsTie()) {
+            openDialogBox("O jogo empatou!");
+            resetGame();
+            plusTies();
         }
-    }
-
-    private void openDialogBox(String message) {
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setContentText(message);
-        ButtonType buttonOkDone = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().add(buttonOkDone);
-        dialog.showAndWait();
-    }
-
-    private void changeTurnPlayer() {
-        isTurnPlayerX = !isTurnPlayerX;
     }
 
     private boolean checkIsTie() {
@@ -160,5 +171,58 @@ public class TicTacToeController implements Initializable {
         }
 
         return isTie;
+    }
+
+    private void resetGame() {
+        clearButtonsText();
+        plusMatches();
+    }
+
+    private void clearButtonsText() {
+        for (Button[] buttonsCol : buttons) {
+            for (Button button : buttonsCol) {
+                button.setText("");
+            }
+        }
+    }
+
+    private void plusMatches() {
+        matches++;
+        labelMatches.setText(String.valueOf(matches));
+    }
+
+    private void plusTies() {
+        ties++;
+        labelTies.setText(String.valueOf(ties));
+    }
+
+    private void openDialogBox(String message) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setContentText(message);
+        ButtonType buttonOkDone = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().add(buttonOkDone);
+        dialog.showAndWait();
+    }
+
+    private void changeTurnPlayer() {
+        isTurnPlayerX = !isTurnPlayerX;
+    }
+
+    private void plusPlayerWins(String currentTurnPlayer) {
+        if(currentTurnPlayer.equals("X")) {
+            plusPlayerXWins();
+        } else {
+            plusPlayerOWins();
+        }
+    }
+
+    private void plusPlayerXWins() {
+        playerXWins++;
+        labelPlayerXWins.setText(String.valueOf(playerXWins));
+    }
+
+    private void plusPlayerOWins() {
+        playerOWins++;
+        labelPlayerOWins.setText(String.valueOf(playerOWins));
     }
 }

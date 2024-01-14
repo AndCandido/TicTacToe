@@ -4,14 +4,41 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.*?>
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
       fx:controller="io.github.andcandido.tictactoe.TicTacToeController">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <GridPane fx:id="gridButtons" hgap="10" vgap="10">
+    <HBox spacing="40">
+        <GridPane fx:id="gridButtons" hgap="10" vgap="10">
+        </GridPane>
+        <VBox spacing="10">
+            <HBox>
+                <Label text="Partidas: " style="-fx-font-weight: bold;" />
+                <Label fx:id="labelMatches" text="0"/>
+            </HBox>
 
-    </GridPane>
+            <HBox>
+                <Label text="Vitórias do jogador 'X': " style="-fx-font-weight: bold;"/>
+                <Label fx:id="labelPlayerXWins" text="0"/>
+            </HBox>
 
+            <HBox>
+                <Label text="Vitórias do jogador 'O': " style="-fx-font-weight: bold;"/>
+                <Label fx:id="labelPlayerOWins" text="0"/>
+            </HBox>
+
+            <HBox>
+                <Label text="Empates: " style="-fx-font-weight: bold;"/>
+                <Label fx:id="labelTies" text="0"/>
+            </HBox>
+            <HBox>
+                <Label text="Tamanho da grid: " style="-fx-font-weight: bold;"/>
+                <Spinner fx:id="spinnerButtonsLayout"/>
+            </HBox>
+        </VBox>
+    </HBox>
 </VBox>
