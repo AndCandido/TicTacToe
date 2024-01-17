@@ -1,56 +1,30 @@
-package io.github.andcandido.tictactoe;
+package io.github.andcandido.tictactoe.controllers;
 
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 
-import java.net.URL;
 import java.util.Objects;
-import java.util.ResourceBundle;
 
-public class TicTacToeController implements Initializable {
-
-    @FXML
-    private GridPane gridButtons;
-    @FXML
-    private Spinner<Integer> spinnerButtonsLayout;
-    @FXML
-    private Label labelMatches;
-    @FXML
-    private Label labelPlayerXWins;
-    @FXML
-    private Label labelPlayerOWins;
-    @FXML
-    private Label labelTies;
+public class GameController {
+    private final MainController mainController;
 
     private Button[][] buttons;
-    private boolean isTurnPlayerX = true;
-    private int matches;
-    private int playerXWins;
-    private int playerOWins;
-    private int ties;
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        initSpinner();
-        initGridButtons(spinnerButtonsLayout.getValue());
+    public GameController(MainController mainController) {
+        this.mainController = mainController;
     }
 
-    private void initSpinner() {
-        spinnerButtonsLayout.setValueFactory(
-            new SpinnerValueFactory.IntegerSpinnerValueFactory(3, 9, 3)
-        );
-        spinnerButtonsLayout.valueProperty().addListener((obs, oldValue, newValue) -> {
-            initGridButtons(newValue);
-        });
+    public void init() {
+        initGridButtons();
     }
 
-    private void initGridButtons(int buttonsLayout) {
+    protected void initGridButtons() {
+        GridPane gridButtons = mainController.getGridButtons();
         gridButtons.getChildren().clear();
+        int quantityButtonsLayout = mainController.getQuantityButtonsLayout();
 
-        buttons = new Button[buttonsLayout][buttonsLayout];
+        buttons = new Button[quantityButtonsLayout][quantityButtonsLayout];
 
         for (int row = 0; row < buttons.length; row++) {
             for (int col = 0; col < buttons[0].length; col++) {
@@ -80,16 +54,16 @@ public class TicTacToeController implements Initializable {
     private void setTextByTurnPlayer(Button button) {
         if(!Objects.equals(button.getText(), "")) return;
 
-        button.setText(isTurnPlayerX ? "X" : "O");
+        button.setText(mainController.isTurnPlayerX() ? "X" : "O");
     }
 
     private void checkWin() {
-        String currentTurnPlayer = isTurnPlayerX ? "X" : "O";
+        String currentTurnPlayer = mainController.isTurnPlayerX() ? "X" : "O";
         if(!isPlayerWon(currentTurnPlayer)) return;
 
-        openDialogBox("Jogador '" + currentTurnPlayer + "' venceu!");
+        mainController.openDialogBox("Jogador '" + currentTurnPlayer + "' venceu!");
         resetGame();
-        plusPlayerWins(currentTurnPlayer);
+        mainController.plusPlayerWins(currentTurnPlayer);
     }
 
     private boolean isPlayerWon(String player) {
@@ -151,11 +125,24 @@ public class TicTacToeController implements Initializable {
         return isWin;
     }
 
+    private void resetGame() {
+        clearButtonsText();
+        mainController.plusMatches();
+    }
+
+    protected void clearButtonsText() {
+        for (Button[] buttonsCol : buttons) {
+            for (Button button : buttonsCol) {
+                button.setText("");
+            }
+        }
+    }
+
     private void checkTie() {
         if(checkIsTie()) {
-            openDialogBox("O jogo empatou!");
+            mainController.openDialogBox("O jogo empatou!");
             resetGame();
-            plusTies();
+            mainController.plusTies();
         }
     }
 
@@ -173,56 +160,8 @@ public class TicTacToeController implements Initializable {
         return isTie;
     }
 
-    private void resetGame() {
-        clearButtonsText();
-        plusMatches();
-    }
-
-    private void clearButtonsText() {
-        for (Button[] buttonsCol : buttons) {
-            for (Button button : buttonsCol) {
-                button.setText("");
-            }
-        }
-    }
-
-    private void plusMatches() {
-        matches++;
-        labelMatches.setText(String.valueOf(matches));
-    }
-
-    private void plusTies() {
-        ties++;
-        labelTies.setText(String.valueOf(ties));
-    }
-
-    private void openDialogBox(String message) {
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setContentText(message);
-        ButtonType buttonOkDone = new ButtonType("Ok", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().add(buttonOkDone);
-        dialog.showAndWait();
-    }
-
     private void changeTurnPlayer() {
-        isTurnPlayerX = !isTurnPlayerX;
-    }
-
-    private void plusPlayerWins(String currentTurnPlayer) {
-        if(currentTurnPlayer.equals("X")) {
-            plusPlayerXWins();
-        } else {
-            plusPlayerOWins();
-        }
-    }
-
-    private void plusPlayerXWins() {
-        playerXWins++;
-        labelPlayerXWins.setText(String.valueOf(playerXWins));
-    }
-
-    private void plusPlayerOWins() {
-        playerOWins++;
-        labelPlayerOWins.setText(String.valueOf(playerOWins));
+        boolean isTurnPlayerX = mainController.isTurnPlayerX();
+        mainController.setTurnPlayerX(!isTurnPlayerX);
     }
 }
